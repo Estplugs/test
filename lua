@@ -18,14 +18,28 @@ else
     warn("Failed to load allowed User IDs:", result)
 end
 
--- Wait for the player's character to fully load
+-- Wait for a player's character to load robustly
 local function waitForCharacter(player)
+    if player.Character and player.Character.Parent then
+        return player.Character
+    end
+
+    -- Wait for the CharacterAdded event
+    local character = nil
     repeat
-        if player.Character and player.Character.Parent then
-            return player.Character
-        end
-        player.CharacterAdded:Wait()
-    until player.Character and player.Character.Parent
+        character = player.Character or player.CharacterAdded:Wait()
+        task.wait() -- Avoid potential infinite loops
+    until character and character.Parent
+
+    return character
+end
+
+-- Ensure LocalPlayer's character is loaded
+local function ensureLocalPlayerCharacter()
+    if not LocalPlayer.Character or not LocalPlayer.Character.Parent then
+        print("Waiting for LocalPlayer's character...")
+        waitForCharacter(LocalPlayer)
+    end
 end
 
 -- Check if a player is allowed
@@ -92,21 +106,14 @@ local function checkExistingPlayers()
     end
 end
 
--- Handle new players joining
+-- Initialize script with robust LocalPlayer character handling
+ensureLocalPlayerCharacter()
+
+checkExistingPlayers()
+
 Players.PlayerAdded:Connect(function(player)
     attachChatListener(player)
 end)
-
--- Ensure LocalPlayer's character is loaded
-local successLocalCharacter = pcall(function()
-    waitForCharacter(LocalPlayer)
-end)
-
-if not successLocalCharacter then
-    warn("LocalPlayer's character failed to load.")
-end
-
-checkExistingPlayers()
 
 RunService.Heartbeat:Connect(function()
     for _, player in ipairs(Players:GetPlayers()) do
