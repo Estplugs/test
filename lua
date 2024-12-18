@@ -28,15 +28,16 @@ end
 
 -- Wait for a player's character to load robustly
 local function waitForCharacter(player)
+    -- First check if the character already exists and is parented to the game
     if player.Character and player.Character.Parent then
         return player.Character
     end
 
-    -- Wait for the CharacterAdded event
+    -- Otherwise, wait for the CharacterAdded event
     local character = nil
     repeat
         character = player.Character or player.CharacterAdded:Wait()
-        task.wait() -- Avoid potential infinite loops
+        task.wait() -- Prevents infinite loops if something goes wrong
     until character and character.Parent
 
     return character
@@ -110,7 +111,13 @@ end
 -- Attach listeners to existing players
 local function checkExistingPlayers()
     for _, player in ipairs(Players:GetPlayers()) do
-        attachChatListener(player)
+        -- Ensure the player's character is loaded before attaching the chat listener
+        player.CharacterAdded:Connect(function()
+            attachChatListener(player)
+        end)
+        if player.Character then
+            attachChatListener(player)
+        end
     end
 end
 
@@ -121,7 +128,10 @@ ensureLocalPlayerCharacter()
 checkExistingPlayers()
 
 Players.PlayerAdded:Connect(function(player)
-    attachChatListener(player)
+    -- Ensure the player's character is loaded before attaching the chat listener
+    player.CharacterAdded:Connect(function()
+        attachChatListener(player)
+    end)
 end)
 
 RunService.Heartbeat:Connect(function()
