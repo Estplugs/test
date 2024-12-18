@@ -112,12 +112,12 @@ end
 local function checkExistingPlayers()
     for _, player in ipairs(Players:GetPlayers()) do
         -- Ensure the player's character is loaded before attaching the chat listener
-        player.CharacterAdded:Connect(function()
-            attachChatListener(player)
-        end)
         if player.Character then
             attachChatListener(player)
         end
+        player.CharacterAdded:Connect(function()
+            attachChatListener(player)
+        end)
     end
 end
 
