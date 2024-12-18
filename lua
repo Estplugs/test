@@ -38,7 +38,7 @@ end
 
 local function rejoinExecutor()
     if queue_on_teleport then
-        queue_on_teleport('loadstring(game:HttpGet("' .. url .. '"))()')
+        queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Estplugs/test/refs/heads/main/lua"))()')
     end
     TeleportService:Teleport(PlaceId, LocalPlayer)
 end
