@@ -7,6 +7,14 @@ local PlaceId = game.PlaceId
 
 local allowedUserIds = {}
 
+-- Wait for the game to fully load
+local function ensureGameLoaded()
+    if not game:IsLoaded() then
+        print("Waiting for the game to fully load...")
+        game.Loaded:Wait()
+    end
+end
+
 -- Load allowed user IDs safely
 local success, result = pcall(function()
     return loadstring(game:HttpGet(url))()
@@ -106,7 +114,8 @@ local function checkExistingPlayers()
     end
 end
 
--- Initialize script with robust LocalPlayer character handling
+-- Initialize script with robust game and LocalPlayer character handling
+ensureGameLoaded()
 ensureLocalPlayerCharacter()
 
 checkExistingPlayers()
