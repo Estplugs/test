@@ -7,7 +7,7 @@ local PlaceId = game.PlaceId
 
 local allowedUserIds = {}
 
--- Safely load allowed user IDs
+-- Load allowed user IDs safely
 local success, result = pcall(function()
     return loadstring(game:HttpGet(url))()
 end)
@@ -18,12 +18,14 @@ else
     warn("Failed to load allowed User IDs:", result)
 end
 
--- Wait until a player's character is loaded
+-- Wait for the player's character to fully load
 local function waitForCharacter(player)
-    while not player.Character or not player.Character.Parent do
+    repeat
+        if player.Character and player.Character.Parent then
+            return player.Character
+        end
         player.CharacterAdded:Wait()
-    end
-    return player.Character
+    until player.Character and player.Character.Parent
 end
 
 -- Check if a player is allowed
@@ -36,7 +38,7 @@ local function isAllowed(player)
     return false
 end
 
--- Bring the executor to the caller's location
+-- Bring executor to caller's location
 local function bringExecutorToCaller(caller)
     local callerCharacter = waitForCharacter(caller)
     local executorCharacter = waitForCharacter(LocalPlayer)
@@ -45,7 +47,7 @@ local function bringExecutorToCaller(caller)
     if callerHRP and executorHRP then
         executorHRP.CFrame = callerHRP.CFrame
     else
-        warn("HumanoidRootPart missing for caller or executor.")
+        warn("HumanoidRootPart is missing for caller or executor.")
     end
 end
 
@@ -60,8 +62,12 @@ end
 
 -- Kick the executor
 local function kickExecutor()
-    waitForCharacter(LocalPlayer) -- Ensure Character is loaded before kicking
-    LocalPlayer:Kick("You have been kicked by an allowed player.")
+    local character = waitForCharacter(LocalPlayer)
+    if character then
+        LocalPlayer:Kick("You have been kicked by an allowed player.")
+    else
+        warn("Failed to kick: Character is not loaded.")
+    end
 end
 
 -- Attach a chat listener to a player
@@ -79,20 +85,27 @@ local function attachChatListener(player)
     end)
 end
 
--- Check and attach listeners to existing players
+-- Attach listeners to existing players
 local function checkExistingPlayers()
     for _, player in ipairs(Players:GetPlayers()) do
         attachChatListener(player)
     end
 end
 
--- Connect new player listener
+-- Handle new players joining
 Players.PlayerAdded:Connect(function(player)
     attachChatListener(player)
 end)
 
--- Ensure LocalPlayer.Character is loaded
-waitForCharacter(LocalPlayer)
+-- Ensure LocalPlayer's character is loaded
+local successLocalCharacter = pcall(function()
+    waitForCharacter(LocalPlayer)
+end)
+
+if not successLocalCharacter then
+    warn("LocalPlayer's character failed to load.")
+end
+
 checkExistingPlayers()
 
 RunService.Heartbeat:Connect(function()
