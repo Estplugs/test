@@ -1,10 +1,56 @@
 -- Protected GitHub-hosted script
 
--- Check if the validation variables are present and correct
-if not script_key or not validated or script_key ~= "HR9kyfOh1i86ytoV" then
+local HttpService = game:GetService("HttpService")
+
+-- Check if the required validation variables are present
+if not script_key or not validated then
     game.Players.LocalPlayer:Kick("Unauthorized access: Please execute the loader script with a valid key.")
     return
 end
 
--- The actual functionality of your script
-print("Hi testing, the script is running correctly!")
+-- Define your validation server endpoint
+local serverEndpoint = "https://your-ngrok-url.ngrok-free.app/validate_key"
+
+-- HWID detection (optional, depending on your setup)
+local userHWID = "NO_HWID_FUNCTION"
+if gethwid then
+    userHWID = gethwid()
+end
+
+-- Build the validation URL
+local validateUrl = string.format("%s?key=%s&hwid=%s", serverEndpoint, script_key, userHWID)
+
+-- Validate the key dynamically with the server
+local success, response = pcall(function()
+    return http.request({
+        Url = validateUrl,
+        Method = "GET"
+    })
+end)
+
+-- Handle no response or failure from the server
+if not success or not response then
+    game.Players.LocalPlayer:Kick("Whitelist check failed: No response from the server.")
+    return
+end
+
+-- Handle invalid response codes
+if response.StatusCode ~= 200 then
+    game.Players.LocalPlayer:Kick("Whitelist check failed: " .. (response.Body or "Unknown error"))
+    return
+end
+
+-- Decode server response
+local data
+local decodeSuccess, decodeError = pcall(function()
+    data = HttpService:JSONDecode(response.Body)
+end)
+
+-- Handle decoding errors or invalid responses
+if not decodeSuccess or not data.valid then
+    game.Players.LocalPlayer:Kick("Whitelist check failed: " .. (data.reason or decodeError))
+    return
+end
+
+-- If the script reaches this point, the key is valid and authorized
+print("The script is running correctly! Key is valid.")
