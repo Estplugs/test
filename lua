@@ -9,7 +9,7 @@ if not script_key or not validated then
 end
 
 -- Define your validation server endpoint
-local serverEndpoint = "https://a8af-2601-647-6512-1bd7-65e8-985-974a-faa2.ngrok-free.app/validate_key"
+local serverEndpoint = "https://e5f7-2601-647-6512-1bd7-65e8-985-974a-faa2.ngrok-free.app/validate_key"
 
 -- HWID detection (optional, depending on your setup)
 local userHWID = "NO_HWID_FUNCTION"
