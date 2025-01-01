@@ -1,22 +1,35 @@
 ------------------------------------------------------
--- loader.lua (hosted on your server or GitHub Raw)
+-- loader.lua (host this at YOUR-SERVER.com/loader.lua)
 ------------------------------------------------------
 
--- 1) Read the user’s key from the environment (the line they typed)
-local userEnv = getfenv(0)
-local userKey = userEnv.script_key
+local httpService = game:GetService("HttpService")
+
+-- 1) Grab the user’s 'script_key' from environment
+--    The user typed: script_key="XXXXXXXX"; loadstring(...)
+local env = getfenv(0)
+local userKey = env.script_key
 if not userKey or userKey == "" then
-    error("No script_key provided! Example usage: script_key=\"MY_KEY\"; loadstring(...)()")
+    error("No script_key provided! Usage:\nscript_key=\"YOUR_KEY\"; loadstring(game:HttpGet(\"URL\"))()")
 end
 
--- 2) Save the key in _G so the main script can see it
+-- 2) Try to get the HWID from the exploit
+--    For example: local userHWID = gethwid() 
+--    If your exploit has a different function name, adjust as needed:
+local userHWID = gethwid()
+if not userHWID then
+    error("Could not obtain HWID from exploit. Is gethwid() supported?")
+end
+
+-- 3) Store them in _G so the main script can see them (if it wants to)
 _G.UserKey = userKey
+_G.UserHWID = userHWID
 _G.LoaderVerified = true
 
--- 3) Validate the key with your Flask/Ngrok server
-local HttpService = game:GetService("HttpService")
-local validationUrl = "https://7112-2601-647-6511-8721-b00d-58ff-435a-9a4a.ngrok-free.app/validate_key?key=" .. userKey
+-- 4) Build the validation URL
+local validationUrl = "https://8a2f-2601-647-6511-8721-b00d-58ff-435a-9a4a.ngrok-free.app/validate_key?key=" 
+    .. userKey .. "&hwid=" .. userHWID
 
+-- 5) Validate via HTTP GET
 local success, response = pcall(function()
     return game:HttpGet(validationUrl)
 end)
@@ -25,24 +38,20 @@ if not success then
     error("Failed to contact validation server: " .. tostring(response))
 end
 
--- 4) Parse the JSON response (e.g., { "valid": true, "reason": "All checks passed" })
 local data
 success, data = pcall(function()
-    return HttpService:JSONDecode(response)
+    return httpService:JSONDecode(response)
 end)
 if not success or type(data) ~= "table" then
-    error("Invalid JSON from server: " .. tostring(response))
+    error("Server returned invalid JSON: " .. tostring(response))
 end
 
--- 5) If the key is invalid, stop
 if not data.valid then
-    error("Key is invalid or blacklisted. Reason: " .. tostring(data.reason))
+    error("Invalid key / blacklisted / HWID mismatch. Reason: " .. tostring(data.reason))
 end
 
--- 6) Key is valid, so now fetch the main script
---    Host your main script somewhere else (private or not easily guessable).
+-- 6) If valid, download the MAIN script
 local mainScriptUrl = "https://raw.githubusercontent.com/Estplugs/Sumiguess/refs/heads/main/Idontknow!"  -- or GitHub raw link
-
 local success2, mainCode = pcall(function()
     return game:HttpGet(mainScriptUrl)
 end)
