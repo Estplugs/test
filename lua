@@ -11,7 +11,7 @@ end
 
 -- 2) Contact your Flask server to validate the key
 local http = game:GetService("HttpService")
-local validateUrl = "https://YOUR-NGROK-OR-DOMAIN/validate_key?key=" .. userKey
+local validateUrl = "https://7112-2601-647-6511-8721-b00d-58ff-435a-9a4a.ngrok-free.app/validate_key?key=" .. userKey
 local success, response = pcall(function()
     return game:HttpGet(validateUrl)
 end)
