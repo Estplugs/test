@@ -1,18 +1,36 @@
--- 1) Check if loader provided the key
+------------------------------------------------------
+-- main.lua
+------------------------------------------------------
+
+-- Make sure the loader set the key
 if not _G.MySecretKey then
-    error("You did not run the official loader script first.")
+    error("No valid key found. Run the loader first!")
 end
 
--- 2) (Optional) Double-check validity again or do a short “phone-home”:
+-- Optional: Re-check with your Flask server
 local http = game:GetService("HttpService")
-local validateUrl = "https://yourserver.com/validate_key?key=" .. _G.MySecretKey
-local response = game:HttpGet(validateUrl)
-local decoded = http:JSONDecode(response)
+local validationUrl = "https://4061-2601-647-6511-8721-b00d-58ff-435a-9a4a.ngrok-free.app/validate_key?key=" .. _G.MySecretKey
 
-if not decoded.valid then
-    error("Invalid or blacklisted key, cannot run script.")
+local success, response = pcall(function()
+    return game:HttpGet(validationUrl)
+end)
+if not success then
+    error("Can't contact validation server: " .. tostring(response))
 end
 
--- 3) If we got here, the script can proceed safely:
-print("Key is valid. Running main functionality...")
--- ...rest of your code...
+-- Now decode the JSON *from the server*, not your script
+local decoded
+success, decoded = pcall(function()
+    return http:JSONDecode(response)  -- The server returns JSON
+end)
+if not success or not decoded or type(decoded) ~= "table" then
+    error("Could not parse JSON from validation server.")
+end
+
+-- Check if valid
+if not decoded.valid then
+    error("Key is not valid. Reason: " .. tostring(decoded.reason))
+end
+
+-- If we got here, it's valid. Continue:
+print("Key is valid, continuing main script code...")
