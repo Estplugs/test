@@ -1,11 +1,6 @@
-------------------------------------------------------
--- loader.lua (host this at YOUR-SERVER.com/loader.lua)
-------------------------------------------------------
-
 local httpService = game:GetService("HttpService")
 
 -- 1) Grab the user’s 'script_key' from environment
---    The user typed: script_key="XXXXXXXX"; loadstring(...)
 local env = getfenv(0)
 local userKey = env.script_key
 if not userKey or userKey == "" then
@@ -13,11 +8,15 @@ if not userKey or userKey == "" then
 end
 
 -- 2) Try to get the HWID from the exploit
---    For example: local userHWID = gethwid() 
---    If your exploit has a different function name, adjust as needed:
-local userHWID = gethwid()
-if not userHWID then
+local userHWID = nil
+if gethwid then
+    userHWID = gethwid() -- Check if 'gethwid' is supported by the exploit
+else
     error("Could not obtain HWID from exploit. Is gethwid() supported?")
+end
+
+if not userHWID or userHWID == "" then
+    error("HWID is empty or invalid.")
 end
 
 -- 3) Store them in _G so the main script can see them (if it wants to)
@@ -26,7 +25,7 @@ _G.UserHWID = userHWID
 _G.LoaderVerified = true
 
 -- 4) Build the validation URL
-local validationUrl = "https://melo.pylex.xyz/validate_key?key=" 
+local validationUrl = "http://melo.pylex.xyz:9350/validate_key?key=" 
     .. userKey .. "&hwid=" .. userHWID
 
 -- 5) Validate via HTTP GET
@@ -51,7 +50,7 @@ if not data.valid then
 end
 
 -- 6) If valid, download the MAIN script
-local mainScriptUrl = "https://raw.githubusercontent.com/Estplugs/Sumiguess/refs/heads/main/Idontknow!"  -- or GitHub raw link
+local mainScriptUrl = "https://raw.githubusercontent.com/Estplugs/test/refs/heads/main/main.lua"
 local success2, mainCode = pcall(function()
     return game:HttpGet(mainScriptUrl)
 end)
