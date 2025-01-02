@@ -1,67 +1,31 @@
+-- 1) Ensure the loader script set these variables
+if not _G.LoaderVerified then
+    error("Please run the loader script, not me directly!")
+end
+if not _G.UserKey or not _G.UserHWID then
+    error("Missing key/HWID. Did you run the correct one-line script?")
+end
+
+-- 2) (Optional) Re-check the server if you want a second layer of validation
 local httpService = game:GetService("HttpService")
+local validationUrl = "http://melo.pylex.xyz:9350/validate_key?key="
+    .. _G.UserKey .. "&hwid=" .. _G.UserHWID
 
--- 1) Grab the user’s 'script_key' from environment
-local env = getfenv(0)
-local userKey = env.script_key
-if not userKey or userKey == "" then
-    error("No script_key provided! Usage:\nscript_key=\"YOUR_KEY\"; loadstring(game:HttpGet(\"URL\"))()")
-end
-
--- 2) Try to get the HWID from the exploit
-local userHWID = nil
-if gethwid then
-    userHWID = gethwid() -- Check if 'gethwid' is supported by the exploit
-else
-    error("Could not obtain HWID from exploit. Is gethwid() supported?")
-end
-
-if not userHWID or userHWID == "" then
-    error("HWID is empty or invalid.")
-end
-
--- 3) Store them in _G so the main script can see them (if it wants to)
-_G.UserKey = userKey
-_G.UserHWID = userHWID
-_G.LoaderVerified = true
-
--- 4) Build the validation URL
-local validationUrl = "http://melo.pylex.xyz:9350/validate_key?key=" 
-    .. userKey .. "&hwid=" .. userHWID
-
--- 5) Validate via HTTP GET
 local success, response = pcall(function()
     return game:HttpGet(validationUrl)
 end)
 
 if not success then
-    error("Failed to contact validation server: " .. tostring(response))
+    error("Cannot contact server again: " .. tostring(response))
 end
 
-local data
-success, data = pcall(function()
-    return httpService:JSONDecode(response)
-end)
-if not success or type(data) ~= "table" then
-    error("Server returned invalid JSON: " .. tostring(response))
-end
-
+local data = httpService:JSONDecode(response)
 if not data.valid then
-    error("Invalid key / blacklisted / HWID mismatch. Reason: " .. tostring(data.reason))
+    error("Key/HWID invalid on second check. Reason: " .. tostring(data.reason))
 end
 
--- 6) If valid, download the MAIN script
-local mainScriptUrl = "https://raw.githubusercontent.com/Estplugs/test/refs/heads/main/main.lua"
-local success2, mainCode = pcall(function()
-    return game:HttpGet(mainScriptUrl)
-end)
-if not success2 then
-    error("Failed to download main script: " .. tostring(mainCode))
-end
+print("Key and HWID are valid. Welcome to the main script!")
 
--- 7) Execute the main script
-local func, loadErr = loadstring(mainCode)
-if not func then
-    error("Error loading main script: " .. tostring(loadErr))
-end
-
-func()
+-- 3) Put your actual code here
+-- Replace the following line with your real script
+loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
