@@ -8,8 +8,8 @@ end
 
 -- 2) (Optional) Re-check the server if you want a second layer of validation
 local httpService = game:GetService("HttpService")
-local validationUrl = "http://melo.pylex.xyz:9350/validate_key?key="
-    .. _G.UserKey .. "&hwid=" .. _G.UserHWID
+local validationUrl = "http://melo.pylex.xyz:9350/validate_key?key=" 
+    .. _G.UserKey .. "&hwid=" .. _G.UserHWID -- Use _G variables from the loader script
 
 local success, response = pcall(function()
     return game:HttpGet(validationUrl)
