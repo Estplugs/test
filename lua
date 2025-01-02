@@ -26,7 +26,7 @@ _G.UserHWID = userHWID
 _G.LoaderVerified = true
 
 -- 4) Build the validation URL
-local validationUrl = "https://melo.pylex.xyz:9350/validate_key?key=" 
+local validationUrl = "https://melo.pylex.xyz/validate_key?key=" 
     .. userKey .. "&hwid=" .. userHWID
 
 -- 5) Validate via HTTP GET
