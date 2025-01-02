@@ -25,7 +25,7 @@ _G.UserHWID = userHWID
 _G.LoaderVerified = true
 
 -- 4) Build the validation URL
-local validationUrl = "http://melo.pylex.xyz:9350/validate_key?key=" 
+local validationUrl = "https://e6b3-2601-647-6511-c2da-b08a-b672-bdf4-f9d7.ngrok-free.app/validate_key?key=" 
     .. userKey .. "&hwid=" .. userHWID
 
 -- 5) Validate via HTTP GET
